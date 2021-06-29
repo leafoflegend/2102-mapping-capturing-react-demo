@@ -24,7 +24,7 @@ const Complaints = ({ complaints }) => {
     >
       <h1>Complaints</h1>
       {
-        complaints.map(({ complaint, department, date }) => {
+        complaints.map(({ content: complaint, departmentName: department, date }) => {
           return (
             <div
               style={{

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import faker from 'faker';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import ReactDOM from 'react-dom';
 import { HashRouter, Switch, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -9,31 +9,32 @@ import Complaints from "./components/complaints";
 
 const app = document.getElementById('app');
 
-const createNavItems = (size) => {
-  const navItems = [];
-
-  for (let i = 0; i < size; ++i) {
-    navItems.push(`${faker.commerce.department()}`);
-  }
-
-  return navItems;
-}
-
 const Root = () => {
-  const [navItems] = useState(createNavItems(3));
+  const [navItems, setNavItems] = useState([]);
   const [complaints, setComplaints] = useState([]);
 
-  const addComplaint = (complaint, department) => {
-    const date = new Date();
+  useEffect(async () => {
+    const { data: { departments } } = await axios.get('/api/departments');
+    const { data: { complaints } } = await axios.get('/api/complaints');
 
-    const newComplaints = complaints.slice();
-    newComplaints.push({
-      complaint,
-      department,
+    const departmentNames = departments.map(({ name }) => name);
+
+    setComplaints(complaints);
+    setNavItems(departmentNames);
+  }, [])
+
+  const addComplaint = async (complaint, department) => {
+    const date = (new Date()).getUTCMilliseconds();
+
+    const complaintToShip = {
+      content: complaint,
+      departmentName: department,
       date,
-    });
+    };
 
-    setComplaints(newComplaints);
+    const { data: complaints } = await axios.post('/api/complaints', complaintToShip);
+
+    setComplaints(complaints);
   };
 
   return (
